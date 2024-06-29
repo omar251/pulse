@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Audio Streaming</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Advanced Audio Streaming</h1>
+    
+    <div>
+        <label for="device-select">Select Audio Device:</label>
+        <select id="device-select"></select>
+    </div>
+    
+    <div>
+        <button id="start-stream">Start Stream</button>
+        <button id="stop-stream">Stop Stream</button>
+    </div>
+    
+    <audio id="audio-player" controls></audio>
+
+    <script>
+        $(document).ready(function() {
+            // Populate device list
+            $.get('/devices', function(devices) {
+                devices.forEach(function(device) {
+                    $('#device-select').append(
+                        $('<option></option>').val(JSON.stringify(device)).html(device.name)
+                    );
+                });
+            });
+
+            // Set device
+            $('#device-select').change(function() {
+                var device = JSON.parse($(this).val());
+                $.ajax({
+                    url: '/set_device',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(device),
+                    success: function(response) {
+                        console.log('Device set:', response);
+                    }
+                });
+            });
+
+            // Start stream
+            $('#start-stream').click(function() {
+                $('#audio-player').attr('src', '/audio');
+                $('#audio-player')[0].play();
+            });
+
+            // Stop stream
+            $('#stop-stream').click(function() {
+                $.get('/stop', function() {
+                    $('#audio-player')[0].pause();
+                    $('#audio-player').attr('src', '');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
